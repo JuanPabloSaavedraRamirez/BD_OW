@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class SkinsManager : MonoBehaviour
 {
-    public Image miImagenUI;
     void Start()
     {
         StartCoroutine(CargarSkins());
@@ -26,7 +25,6 @@ public class SkinsManager : MonoBehaviour
                     {
                         Debug.Log($"ID Skin: [{s.ID_Skin}] -- ID Heroe: {s.ID_Heroe} — Colaboración: {s.Colaboracion}");
                         Debug.Log($"Imagen: {s.URL_Skin}");
-                        StartCoroutine(CargarImagen(s.URL_Skin, miImagenUI));
                     }
                 },
                 onError: err => Debug.LogError($"Error al cargar skins: {err}")
@@ -40,19 +38,4 @@ public class SkinsManager : MonoBehaviour
         public T[] items; 
     }
 
-    IEnumerator CargarImagen(string url, Image imagenUI)
-    {
-        using var req = UnityWebRequestTexture.GetTexture(url);
-        yield return req.SendWebRequest();
-
-        if (req.result == UnityWebRequest.Result.Success)
-        {
-            var tex     = DownloadHandlerTexture.GetContent(req);
-            imagenUI.sprite = Sprite.Create(
-                tex,
-                new Rect(0, 0, tex.width, tex.height),
-                new Vector2(0.5f, 0.5f)
-            );
-        }
-    }
 }
