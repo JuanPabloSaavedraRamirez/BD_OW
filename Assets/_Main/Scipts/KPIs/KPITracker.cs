@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -13,7 +12,8 @@ public class KPITracker : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void RegistrarVistaHeroe(Heroe h) => StartCoroutine(InsertarVista("Heroe", h.ID_Heroe, h.Nombre, h.ID_Heroe));
+    public void RegistrarVistaHeroe(Heroe h) =>
+        StartCoroutine(InsertarVista("Heroe", h.ID_Heroe, h.Nombre, h.ID_Heroe));
 
     public void RegistrarVistaSkin(Skins s)
     {
@@ -23,6 +23,9 @@ public class KPITracker : MonoBehaviour
 
     public void RegistrarVistaUlti(Ultimates u) =>
         StartCoroutine(InsertarVista("Ultimate", u.ID_Ultimate, u.Nombre, u.ID_Heroe));
+
+    public void RegistrarVistaHabilidad(Habilidad h) =>
+        StartCoroutine(InsertarVista("Habilidad", h.ID_Habilidad, h.Nombre, 0));
 
     private IEnumerator InsertarVista(string tipo, int idEntidad, string nombre, int idHeroe)
     {
@@ -43,5 +46,6 @@ public class KPITracker : MonoBehaviour
         );
     }
 
-    private string EscaparJson(string s) => string.IsNullOrEmpty(s) ? "" : s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+    private string EscaparJson(string s) =>
+        string.IsNullOrEmpty(s) ? "" : s.Replace("\\", "\\\\").Replace("\"", "\\\"");
 }

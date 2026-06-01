@@ -9,14 +9,18 @@ public class HeroDetailPanel : MonoBehaviour
 {
     public static HeroDetailPanel Instance { get; private set; }
 
+    public static Skins[] TodasLasSkins  { get; set; }
+    public static Ultimates[] TodosLosUltis  { get; set; }
+
     [Header("Panel raíz")]
     [SerializeField] private GameObject panelRoot;
+    [SerializeField] private Button closeButton;
 
     [Header("Info del héroe")]
     [SerializeField] private Image heroImage;
     [SerializeField] private TextMeshProUGUI heroName;
     [SerializeField] private TextMeshProUGUI heroDescripcion;
-    [SerializeField] private TextMeshProUGUI heroStats; 
+    [SerializeField] private TextMeshProUGUI heroStats;
 
     [Header("Skins")]
     [SerializeField] private Transform skinsContent;
@@ -28,20 +32,17 @@ public class HeroDetailPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI ultiDescripcion;
     [SerializeField] private TextMeshProUGUI ultiStats;
 
-    [Header("Botón cerrar")]
-    [SerializeField] private Button closeButton;
+    [Header("Habilidades — 4 botones fijos")]
+    [SerializeField] private GameObject habilidadCardPrefab;
+    [SerializeField] private Transform habilidadesContent; 
 
-    public static Skins[] TodasLasSkins { get; set; }
-    public static Ultimates[] TodosLosUltis { get; set; }
-
-    private void Awake()
+    void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         closeButton?.onClick.AddListener(Cerrar);
         panelRoot.SetActive(false);
     }
-
 
     public void Mostrar(Heroe heroe)
     {
@@ -50,32 +51,26 @@ public class HeroDetailPanel : MonoBehaviour
         heroName.text = heroe.Nombre;
         heroDescripcion.text = heroe.Descripcion;
         heroStats.text = $"❤ {heroe.Vida}   🛡 {heroe.Escudo}   🔰 {heroe.Armadura}   Edad: {heroe.Edad}   Altura: {heroe.Altura:F1}m";
-
         StartCoroutine(CargarImagen(heroe.URL_Heroe, heroImage));
 
         CargarSkins(heroe.ID_Heroe);
-
         CargarUltimate(heroe.ID_Heroe);
+        CargarHabilidades(heroe.ID_Heroe);
 
         panelRoot.SetActive(true);
     }
 
     public void Cerrar() => panelRoot.SetActive(false);
 
-
     private void CargarSkins(int idHeroe)
     {
         foreach (Transform child in skinsContent) Destroy(child.gameObject);
-
         if (TodasLasSkins == null) return;
 
-        var skinsDelHeroe = TodasLasSkins.Where(s => s.ID_Heroe == idHeroe).ToArray();
-
-        foreach (var skin in skinsDelHeroe)
+        foreach (var skin in TodasLasSkins.Where(s => s.ID_Heroe == idHeroe))
         {
-            GameObject card = Instantiate(skinCardPrefab, skinsContent);
-            SkinCardUI ui   = card.GetComponent<SkinCardUI>();
-            ui?.Setup(skin);
+            var card = Instantiate(skinCardPrefab, skinsContent);
+            card.GetComponent<SkinCardUI>()?.Setup(skin);
         }
     }
 
@@ -88,35 +83,61 @@ public class HeroDetailPanel : MonoBehaviour
         if (ulti == null)
         {
             ultiNombre.text = "Sin ultimate";
-            ultiDescripcion.text = "";
-            ultiStats.text = "";
-            ultiImage.sprite = null;
+            ultiDescripcion.text = ultiStats.text = "";
             return;
         }
 
         KPITracker.Instance?.RegistrarVistaUlti(ulti);
-
         ultiNombre.text = ulti.Nombre;
         ultiDescripcion.text = ulti.Descripcion;
-        ultiStats.text = $"⏱ Cooldown: {ulti.Cooldown}s   💥 Daño: {ulti.Damage}";
+        ultiStats.text = $"⏱ {ulti.Cooldown}s   💥 {ulti.Damage}";
         StartCoroutine(CargarImagen(ulti.URL_Ulti, ultiImage));
     }
 
+    private void CargarHabilidades(int idHeroe)
+    {
+        foreach (Transform child in habilidadesContent) Destroy(child.gameObject);
+
+        if (HabilidadesManager.TodosLosPaquetes == null ||
+            HabilidadesManager.TodasLasHabilidades == null) return;
+
+        var paquete = HabilidadesManager.TodosLosPaquetes
+            .FirstOrDefault(p => p.ID_Heroe == idHeroe);
+
+        if (paquete == null) return;
+
+        int[] ids = new[]
+        {
+            paquete.ID_Habilidad_1,
+            paquete.ID_Habilidad_2,
+            paquete.ID_Habilidad_3,
+            paquete.ID_Habilidad_4
+        };
+
+        foreach (int idHab in ids)
+        {
+            var hab = HabilidadesManager.TodasLasHabilidades
+                .FirstOrDefault(h => h.ID_Habilidad == idHab);
+
+            if (hab == null) continue;
+
+            var card = Instantiate(habilidadCardPrefab, habilidadesContent);
+            card.GetComponent<HabilidadCardUI>()?.Setup(hab);
+        }
+    }
 
     private IEnumerator CargarImagen(string url, Image target)
     {
         if (string.IsNullOrEmpty(url) || target == null) yield break;
 
-        using (var req = UnityWebRequestTexture.GetTexture(url))
+        using var req = UnityWebRequestTexture.GetTexture(url);
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.Success)
         {
-            yield return req.SendWebRequest();
-            if (req.result == UnityWebRequest.Result.Success)
-            {
-                var tex    = DownloadHandlerTexture.GetContent(req);
-                target.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-            }
-            else
-                Debug.LogWarning($"[HeroDetailPanel] No se pudo cargar imagen: {url}");
+            var tex = DownloadHandlerTexture.GetContent(req);
+            target.sprite = Sprite.Create(
+                tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         }
     }
 }
