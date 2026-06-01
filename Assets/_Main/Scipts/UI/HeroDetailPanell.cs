@@ -50,7 +50,7 @@ public class HeroDetailPanel : MonoBehaviour
 
         heroName.text = heroe.Nombre;
         heroDescripcion.text = heroe.Descripcion;
-        heroStats.text = $"❤ {heroe.Vida}   🛡 {heroe.Escudo}   🔰 {heroe.Armadura}   Edad: {heroe.Edad}   Altura: {heroe.Altura:F1}m";
+        heroStats.text = $"Health: {heroe.Vida} | Shield: {heroe.Escudo} | Armor: {heroe.Armadura} | Age: {heroe.Edad} | Height: {heroe.Altura:F1}m";
         StartCoroutine(CargarImagen(heroe.URL_Heroe, heroImage));
 
         CargarSkins(heroe.ID_Heroe);
@@ -74,7 +74,6 @@ public class HeroDetailPanel : MonoBehaviour
         }
     }
 
-
     private void CargarUltimate(int idHeroe)
     {
         if (TodosLosUltis == null) return;
@@ -84,14 +83,17 @@ public class HeroDetailPanel : MonoBehaviour
         {
             ultiNombre.text = "Sin ultimate";
             ultiDescripcion.text = ultiStats.text = "";
+            Debug.Log($"[HeroDetailPanel] TodosLosUltis es null: {TodosLosUltis == null}");
             return;
         }
-
+        
         KPITracker.Instance?.RegistrarVistaUlti(ulti);
         ultiNombre.text = ulti.Nombre;
         ultiDescripcion.text = ulti.Descripcion;
-        ultiStats.text = $"⏱ {ulti.Cooldown}s   💥 {ulti.Damage}";
+        ultiStats.text = $"Cooldown: {ulti.Cooldown}s | Damage: {ulti.Damage}";
         StartCoroutine(CargarImagen(ulti.URL_Ulti, ultiImage));
+        //var ulti = TodosLosUltis?.FirstOrDefault(u => u.ID_Heroe == idHeroe);
+        Debug.Log($"[HeroDetailPanel] Ulti encontrada: {ulti?.Nombre ?? "NINGUNA"}");
     }
 
     private void CargarHabilidades(int idHeroe)

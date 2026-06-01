@@ -273,3 +273,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HabilidadCardUI
   nombreText: {fileID: 1739192271006780924}
   boton: {fileID: 4341691245443991234}
+  abilitieImage: {fileID: 2327584321740749455}
+  loadingSprite: {fileID: 0}
