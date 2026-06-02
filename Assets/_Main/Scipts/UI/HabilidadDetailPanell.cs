@@ -32,7 +32,7 @@ public class HabilidadDetailPanel : MonoBehaviour
 
         habilidadNombre.text = h.Nombre;
         habilidadDescripcion.text = h.Descripcion;
-        habilidadStats.text = $"⏱ Cooldown: {h.Cooldown}s   💥 Daño: {h.Damage}   💚 Cura: {h.Cura}";
+        habilidadStats.text = $"Cooldown: {h.Cooldown}s | Daño: {h.Damage} | Cura: {h.Cura}";
 
         if (!string.IsNullOrEmpty(h.URL_Habilidad))
             StartCoroutine(CargarImagen(h.URL_Habilidad));
